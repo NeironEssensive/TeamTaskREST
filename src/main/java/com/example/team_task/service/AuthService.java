@@ -1,9 +1,11 @@
 package com.example.team_task.service;
 
 import org.springframework.lang.NonNull;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.example.team_task.dto.error.UserNotFoundException;
 import com.example.team_task.entity.User;
 import com.example.team_task.repository.UserRepository;
 
@@ -24,7 +26,7 @@ public class AuthService {
 
     public User authenticate(String name, String password){
        User user = userRepository.findByName(name)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found: " + name));
+            .orElseThrow(() -> new UserNotFoundException("User not found: " + name));
         
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new ValidationException("Invalid password");
