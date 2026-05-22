@@ -1,22 +1,39 @@
 package com.example.team_task.service;
 
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import java.util.Optional;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.stereotype.Service;
 
-import com.example.team_task.config.SecurityConfig;
+
+import com.example.team_task.dto.error.UserNotFoundException;
 import com.example.team_task.entity.User;
 import com.example.team_task.repository.UserRepository;
 
-import jakarta.validation.ValidationException;
+
 
 @Service
 public class UserService {
     private UserRepository userRepository;
-    private SecurityConfig securityConfig;
-    public UserService(UserRepository userRepository, SecurityConfig securityConfig){
+    public UserService(UserRepository userRepository){
         this.userRepository = userRepository;
-        this.securityConfig = securityConfig;
     }
+    public Optional<User> getCurrentUser(){
+        String username = getCurrentUsername();
+        User user = userRepository.findByName(username).orElseThrow(() -> new UserNotFoundException(username));
+        return Optional.ofNullable(user);
+    }
+    public String getCurrentUsername() {
+        Authentication authentication = SecurityContextHolder
+                .getContext()
+                .getAuthentication();
+        
+        return authentication.getName();
+    }
+
+
     
     
 }

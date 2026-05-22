@@ -6,10 +6,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.team_task.dto.error.UserNotFoundException;
+import com.example.team_task.dto.error.ValidationException;
 import com.example.team_task.entity.User;
 import com.example.team_task.repository.UserRepository;
 
-import jakarta.validation.ValidationException;
 
 @Service
 public class AuthService {
@@ -29,7 +29,7 @@ public class AuthService {
             .orElseThrow(() -> new UserNotFoundException("User not found: " + name));
         
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new ValidationException("Invalid password");
+            throw new ValidationException("Login or password are wrong");
         }
         return user;
     }
