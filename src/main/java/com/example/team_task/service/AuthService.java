@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.team_task.dto.error.UserNotFoundException;
 import com.example.team_task.dto.error.ValidationException;
+import com.example.team_task.dto.user.UserResponse;
 import com.example.team_task.entity.User;
 import com.example.team_task.repository.UserRepository;
 
@@ -15,13 +16,15 @@ import com.example.team_task.repository.UserRepository;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder){
+    private final UserService userService;
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserService userService){
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
     }
 
-    public User saveUser(@NonNull User user){
-        return userRepository.save(user);
+    public UserResponse saveUser(@NonNull User user){
+        return userService.mapToResponse(userRepository.save(user));
     }
 
     public User authenticate(String name, String password){

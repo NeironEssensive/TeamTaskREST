@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.team_task.dto.error.UserAlreadyExistException;
+import com.example.team_task.dto.user.UserResponse;
 import com.example.team_task.entity.User;
 import com.example.team_task.repository.UserRepository;
 import com.example.team_task.service.AuthService;
 import com.example.team_task.service.JwtService;
+import com.example.team_task.service.UserService;
 
 @RestController
 @RequestMapping("/auth")
@@ -21,24 +23,23 @@ public class AuthController {
     private final AuthService authService;
     private JwtService jwtService;
     private PasswordEncoder passwordEncoder;
-    private UserRepository userRepository;
+    private UserService userService;
+
 
     public AuthController(AuthService authService, JwtService jwtService, PasswordEncoder passwordEncoder,
-            UserRepository userRepository) {
+            UserService userService) {
         this.authService = authService;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
-        this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     @PostMapping("/register")
-    public User register(@RequestBody User user) {
-        Optional<User> validUser = userRepository.findByName(user.getName());
-
+    public UserResponse register(@RequestBody User user) {
+        Optional<UserResponse> validUser = userService.findByNameOptional(user.getName());
         if (validUser.isPresent()) throw new UserAlreadyExistException("username", user.getName());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return authService.saveUser(user);
-        
     }
 
     @PostMapping("/login")
