@@ -48,6 +48,10 @@ public class UserService {
         return userRepository.findByName(name).map(this::mapToResponse);
     }
 
+    public User findById(Long id){
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+    }
+
     public UserResponse mapToResponse(User user) {
         return UserResponse.builder()
                 .id(user.getId())
