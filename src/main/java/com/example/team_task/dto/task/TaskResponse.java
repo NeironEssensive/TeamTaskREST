@@ -1,6 +1,10 @@
 package com.example.team_task.dto.task;
 
 import java.time.LocalDateTime;
+
+import com.example.team_task.entity.Task.Priority;
+import com.example.team_task.entity.Task.Status;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

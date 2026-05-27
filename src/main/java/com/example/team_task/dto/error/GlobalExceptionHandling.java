@@ -33,7 +33,7 @@ public class GlobalExceptionHandling {
     }
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex, HttpServletRequest request){
-        return buildResponse(HttpStatus.CONFLICT, "Login or password are wrong", ex.getMessage(), request);
+        return buildResponse(HttpStatus.CONFLICT, "wrong data", ex.getMessage(), request);
     }
     private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String error, String message, HttpServletRequest request) {
         ErrorResponse response = ErrorResponse
