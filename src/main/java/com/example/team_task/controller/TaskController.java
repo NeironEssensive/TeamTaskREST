@@ -5,13 +5,13 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.team_task.dto.error.AccessDeniedException;
-import com.example.team_task.dto.error.UserNotFoundException;
 import com.example.team_task.dto.task.TaskResponse;
 import com.example.team_task.dto.user.UserResponse;
 import com.example.team_task.entity.Task;
@@ -50,5 +50,20 @@ public class TaskController {
         UserResponse currentUser = userService.getCurrentUser();
         if(!currentUser.getRole().equals("ADMIN")) throw new AccessDeniedException();
         return ResponseEntity.ok(taskService.allTasks());
+    }
+
+    @GetMapping("/admin/task/{id}")
+    public ResponseEntity<TaskResponse> adminTaskById(@PathVariable Long id){
+        UserResponse currentUser = userService.getCurrentUser();
+        if(!currentUser.getRole().equals("ADMIN")) throw new AccessDeniedException();
+        return ResponseEntity.ok(taskService.findTaskById(id));
+    }
+
+    @GetMapping("/myTasks/{id}")
+    public ResponseEntity<TaskResponse> taskById(@PathVariable Long id){
+        UserResponse user = userService.getCurrentUser();
+        TaskResponse task = taskService.findTaskById(id);
+        if(task.getUserId() != user.getId()) throw new AccessDeniedException();
+        return ResponseEntity.ok(taskService.findTaskById(id));
     }
 }

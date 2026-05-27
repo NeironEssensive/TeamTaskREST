@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.team_task.dto.error.TaskNotFoundException;
 import com.example.team_task.dto.task.TaskResponse;
 import com.example.team_task.dto.user.UserResponse;
 import com.example.team_task.entity.Task;
@@ -37,6 +38,10 @@ public class TaskService {
             .stream()
             .map(this::mapToResponse)
             .toList();
+    }
+
+    public TaskResponse findTaskById(Long id){
+        return mapToResponse(taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id)));
     }
 
    
