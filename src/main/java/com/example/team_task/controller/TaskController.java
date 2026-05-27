@@ -1,13 +1,17 @@
 package com.example.team_task.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.team_task.dto.error.AccessDeniedException;
+import com.example.team_task.dto.error.UserNotFoundException;
 import com.example.team_task.dto.task.TaskResponse;
 import com.example.team_task.dto.user.UserResponse;
 import com.example.team_task.entity.Task;
@@ -34,5 +38,17 @@ public class TaskController {
         User user = userService.findById(current.getId());
         Task task = new Task(title, description, user);
         return ResponseEntity.ok(taskService.saveTask(task));     
+    }
+
+    @GetMapping("/myTasks")
+    public ResponseEntity<List<TaskResponse>> myTasks(){
+        return ResponseEntity.ok(taskService.myTasks()); 
+    }
+
+    @GetMapping("/admin/allTasks")
+    public ResponseEntity<List<TaskResponse>> allTasks(){
+        UserResponse currentUser = userService.getCurrentUser();
+        if(!currentUser.getRole().equals("ADMIN")) throw new AccessDeniedException();
+        return ResponseEntity.ok(taskService.allTasks());
     }
 }

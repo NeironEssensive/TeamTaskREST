@@ -39,6 +39,8 @@ public class UserService {
         return authentication.getName();
     }
 
+
+
     public UserResponse findByName(String name) {
         User user = userRepository.findByName(name).orElseThrow(() -> new UserNotFoundException(name));
         return mapToResponse(user);
