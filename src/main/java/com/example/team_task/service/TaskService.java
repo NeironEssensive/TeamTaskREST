@@ -5,15 +5,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import org.springframework.cglib.core.Local;
 import org.springframework.lang.NonNull;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.team_task.dto.error.AccessDeniedException;
 import com.example.team_task.dto.error.TaskNotFoundException;
 import com.example.team_task.dto.error.ValidationException;
 import com.example.team_task.dto.task.TaskResponse;
@@ -21,7 +17,6 @@ import com.example.team_task.dto.user.UserResponse;
 import com.example.team_task.entity.Task;
 import com.example.team_task.entity.Task.Priority;
 import com.example.team_task.entity.Task.Status;
-import com.example.team_task.entity.User.Role;
 import com.example.team_task.repository.TaskRepository;
 
 @Service

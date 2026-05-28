@@ -1,5 +1,6 @@
 package com.example.team_task.entity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -16,27 +17,36 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 @Entity
 @Table(name = "comments")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter
+@Schema(description = "Comment entity representing a comment on a task")
 public class Comment {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Unique identifier of the comment", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
     @Column(nullable = false, length = 500)
+    @Schema(description = "Content of the comment", example = "Great progress on this task!", required = true, maxLength = 500)
     private String text;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
+    @Schema(description = "Task that this comment belongs to", required = true)
     private Task task;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @Schema(description = "User who wrote this comment", required = true)
     private User user;
 
     @Column(nullable = false, updatable = false)
+    @Schema(description = "Timestamp when the comment was created", example = "2024-01-15T10:30:00", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createdAt;
 
     @PrePersist
