@@ -1,6 +1,10 @@
 package com.example.team_task.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -25,12 +30,14 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Task {
-    public enum Status{
+    public enum Status {
         PENDING, IN_PROGRESS, DONE
     }
-    public enum Priority{
+
+    public enum Priority {
         LOW, MEDIUM, HIGH
     }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -51,12 +58,14 @@ public class Task {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
+
     @Column(nullable = false)
     private LocalDateTime updatedAt;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
@@ -69,11 +78,10 @@ public class Task {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Task(String title, String description, User user){
+    public Task(String title, String description, User user) {
         this.title = title;
         this.description = description;
         this.user = user;
     }
-
 
 }

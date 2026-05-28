@@ -68,6 +68,11 @@ public class TaskService {
         return updatedTask;
     }
 
+    @Transactional
+    public void deleteTask(Long id){
+        taskRepository.deleteById(id);
+    }
+
     private void updateFields(Task task, Map<String, Object> taskData) {
         Optional.ofNullable((String) taskData.get("title"))
                 .ifPresent(task::setTitle);

@@ -39,19 +39,17 @@ public class UserService {
         return authentication.getName();
     }
 
-
-
     public UserResponse findByName(String name) {
         User user = userRepository.findByName(name).orElseThrow(() -> new UserNotFoundException(name));
         return mapToResponse(user);
     }
 
-    public Optional<UserResponse> findByNameOptional(String name) {
-        return userRepository.findByName(name).map(this::mapToResponse);
+    public User findById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
-    public User findById(Long id){
-        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
     }
 
     public UserResponse mapToResponse(User user) {

@@ -2,7 +2,6 @@ package com.example.team_task.dto.auth;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
-
 @Data
 @Builder
 @AllArgsConstructor
