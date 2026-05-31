@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,10 +25,12 @@ import com.example.team_task.dto.auth.LogoutRequest;
 import com.example.team_task.dto.auth.RefreshRequest;
 import com.example.team_task.dto.auth.RegisterRequest;
 import com.example.team_task.dto.error.ErrorResponse;
+import com.example.team_task.dto.error.TooManyRequestsException;
 import com.example.team_task.dto.user.UserResponse;
 import com.example.team_task.entity.User;
 import com.example.team_task.service.AuthService;
 import com.example.team_task.service.JwtService;
+import com.example.team_task.service.RateLimitService;
 import com.example.team_task.service.UserService;
 
 import jakarta.validation.Valid;
@@ -40,13 +43,15 @@ public class AuthController {
     private JwtService jwtService;
     private PasswordEncoder passwordEncoder;
     private UserService userService;
+    private RateLimitService rateLimitService;
 
     public AuthController(AuthService authService, JwtService jwtService, PasswordEncoder passwordEncoder,
-            UserService userService) {
+            UserService userService, RateLimitService rateLimitService) {
         this.authService = authService;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.userService = userService;
+        this.rateLimitService = rateLimitService;
     }
 
     @PostMapping("/register")
@@ -98,8 +103,7 @@ public class AuthController {
                             }
                             """)
             }) @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
-
+         return ResponseEntity.ok(authService.login(request));
     }
 
     @PostMapping("/refresh")

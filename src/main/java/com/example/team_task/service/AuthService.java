@@ -13,6 +13,7 @@ import com.example.team_task.dto.auth.LogoutRequest;
 import com.example.team_task.dto.auth.RefreshRequest;
 import com.example.team_task.dto.auth.RefreshTokenData;
 import com.example.team_task.dto.auth.RegisterRequest;
+import com.example.team_task.dto.error.TooManyRequestsException;
 import com.example.team_task.dto.error.UserAlreadyExistException;
 import com.example.team_task.dto.error.UserNotFoundException;
 import com.example.team_task.dto.error.ValidationException;
@@ -23,7 +24,6 @@ import com.example.team_task.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
-
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -32,25 +32,28 @@ public class AuthService {
     private final UserService userService;
     private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
+    private final RateLimitService rateLimitService;
 
     @Transactional
-    public UserResponse saveUser(RegisterRequest request){
+    public UserResponse saveUser(RegisterRequest request) {
         if (userRepository.existsByName(request.getName())) {
             throw new UserAlreadyExistException("username", request.getName());
         }
         User user = new User();
         user.setName(request.getName());
         user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));  
-        user.setRole(Role.USER);  
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(Role.USER);
         User savedUser = userRepository.save(user);
         return userService.mapToResponse(savedUser);
     }
-    
-    public User authenticate(String name, String password){
-       User user = userRepository.findByName(name)
-            .orElseThrow(() -> new UserNotFoundException("User not found: " + name));
-        
+
+    public User authenticate(String name, String password) {
+        if (rateLimitService.isRegisterRateLimited()) {
+            throw new TooManyRequestsException("Too many login attempts. Try again later.");
+        }
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + name));
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new ValidationException("Login or password are wrong");
         }
@@ -58,12 +61,16 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        User user = userRepository.findByName(request.getName())
-                .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
-
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BadCredentialsException("Invalid credentials");
+        if (rateLimitService.isLoginRateLimited()) {
+            throw new TooManyRequestsException("Too many login attempts. Try again later.");
         }
+        User user = userRepository.findByName(request.getName())
+                .orElseThrow(() -> new UserNotFoundException(request.getName()));
+       
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new ValidationException("Invalid credentials");
+        }
+        rateLimitService.resetLoginAttempts();
 
         String accessToken = jwtService.generateToken(user.getName(), user.getRole().name());
         String refreshToken = refreshTokenService.createRefreshToken(
@@ -93,8 +100,5 @@ public class AuthService {
     public void logout(LogoutRequest request) {
         refreshTokenService.deleteRefreshToken(request.getRefreshToken());
     }
-
-    
-
 
 }

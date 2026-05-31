@@ -77,6 +77,11 @@ public class GlobalExceptionHandling {
         return buildResponse(HttpStatus.CONFLICT, "wrong data", ex.getMessage(), request);
     }
     
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<ErrorResponse> handleTooManyRequestsException(TooManyRequestsException ex, HttpServletRequest request){
+        return buildResponse(HttpStatus.TOO_MANY_REQUESTS, "too many requests", ex.getMessage(), request);
+    }
+
     private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String error, String message, HttpServletRequest request) {
         ErrorResponse response = ErrorResponse
          .builder()
