@@ -1,9 +1,6 @@
 package com.example.team_task.service;
 
 import java.util.List;
-import java.util.Optional;
-
-import org.hibernate.annotations.Cache;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;

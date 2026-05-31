@@ -18,6 +18,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.team_task.dto.auth.LoginRequest;
+import com.example.team_task.dto.auth.LoginResponse;
+import com.example.team_task.dto.auth.LogoutRequest;
+import com.example.team_task.dto.auth.RefreshRequest;
 import com.example.team_task.dto.auth.RegisterRequest;
 import com.example.team_task.dto.error.ErrorResponse;
 import com.example.team_task.dto.user.UserResponse;
@@ -46,26 +50,10 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    @Operation(
-        summary = "Register a new user",
-        description = "Creates a new user account with USER role. Username must be unique and email must be valid."
-    )
+    @Operation(summary = "Register a new user", description = "Creates a new user account with USER role. Username must be unique and email must be valid.")
     @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "201",
-            description = "User successfully registered",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = UserResponse.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "226",
-            description = "User already exists",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = ErrorResponse.class),
-                examples = @ExampleObject(value = """
+            @ApiResponse(responseCode = "201", description = "User successfully registered", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "226", description = "User already exists", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class), examples = @ExampleObject(value = """
                     {
                         "timeStamp": "2024-01-15T10:30:00",
                         "status": 226,
@@ -73,59 +61,25 @@ public class AuthController {
                         "message": "User with username : john_doe already exists",
                         "path": "/auth/register"
                     }
-                    """)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Invalid input data",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = ErrorResponse.class)
-            )
-        )
+                    """))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<UserResponse> register(
-            @Parameter(description = "Registration details", required = true)
-            @Valid @RequestBody RegisterRequest request) {
+            @Parameter(description = "Registration details", required = true) @Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(authService.saveUser(request));
     }
 
     @PostMapping("/login")
-    @Operation(
-        summary = "Authenticate user",
-        description = "Authenticates user with username and password, returns JWT token on success"
-    )
+    @Operation(summary = "Authenticate user", description = "Authenticates user with username and password, returns JWT token on success")
     @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully authenticated",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = Map.class),
-                examples = @ExampleObject(value = """
+            @ApiResponse(responseCode = "200", description = "Successfully authenticated", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class), examples = @ExampleObject(value = """
                     {
                         "token": "eyJhbGciOiJIUzI1NiJ9..."
                     }
-                    """)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "User not found",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = ErrorResponse.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "409",
-            description = "Invalid credentials",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = ErrorResponse.class),
-                examples = @ExampleObject(value = """
+                    """))),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Invalid credentials", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class), examples = @ExampleObject(value = """
                     {
                         "timeStamp": "2024-01-15T10:30:00",
                         "status": 409,
@@ -133,31 +87,29 @@ public class AuthController {
                         "message": "Login or password are wrong",
                         "path": "/auth/login"
                     }
-                    """)
-            )
-        )
+                    """)))
     })
-    public Map<String, String> login(
-            @Parameter(
-                description = "Login credentials",
-                required = true,
-                examples = {
-                    @ExampleObject(
-                        name = "Login request",
-                        value = """
+    public ResponseEntity<LoginResponse> login(
+            @Parameter(description = "Login credentials", required = true, examples = {
+                    @ExampleObject(name = "Login request", value = """
                             {
                                 "name": "john_doe",
                                 "password": "securePass123"
                             }
-                            """
-                    )
-                }
-            )
-            @RequestBody Map<String, String> loginData) {
-        String name = loginData.get("name");
-        String password = loginData.get("password");
-        User user = authService.authenticate(name, password);
-        String token = jwtService.generateToken(name, user.getRole().toString());
-        return Map.of("token", token);
+                            """)
+            }) @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
+
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refresh(@Valid @RequestBody RefreshRequest request) {
+        return ResponseEntity.ok(authService.refresh(request));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@Valid @RequestBody LogoutRequest request) {
+        authService.logout(request);
+        return ResponseEntity.noContent().build();
     }
 }
