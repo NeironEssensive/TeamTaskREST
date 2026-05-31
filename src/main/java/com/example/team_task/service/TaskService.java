@@ -5,6 +5,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.lang.NonNull;
 
 import org.springframework.stereotype.Service;
@@ -30,14 +35,17 @@ public class TaskService {
     }
 
     @Transactional
+    @CacheEvict(value = "tasks", allEntries = true)
     public TaskResponse saveTask(@NonNull Task task) {
         return mapToResponse(taskRepository.save(task));
     }
 
+    @Cacheable(value = "tasks", key = "'allTasks'")
     public List<TaskResponse> allTasks() {
         return taskRepository.findAll().stream().map(this::mapToResponse).toList();
     }
 
+    @Cacheable(value = "tasks", key = "'myTasks:' + @userService.getCurrentUsername()")
     public List<TaskResponse> myTasks() {
         UserResponse current = userService.getCurrentUser();
         return taskRepository.findByUserId(current.getId())
@@ -46,6 +54,7 @@ public class TaskService {
                 .toList();
     }
 
+    @Cacheable(value = "task", key = "#id")
     public TaskResponse findTaskById(Long id) {
         return mapToResponse(taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id)));
     }
@@ -55,6 +64,11 @@ public class TaskService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "tasks", allEntries = true) 
+    }, put = {
+            @CachePut(value = "task", key = "#id") 
+    })
     public TaskResponse updateTask(Long id, Map<String, Object> taskData) {
         Task task = entityFindTaskById(id);
         updateFields(task, taskData);
@@ -64,7 +78,11 @@ public class TaskService {
     }
 
     @Transactional
-    public void deleteTask(Long id){
+    @Caching(evict = {
+            @CacheEvict(value = "task", key = "#id"),
+            @CacheEvict(value = "tasks", allEntries = true)
+    })
+    public void deleteTask(Long id) {
         taskRepository.deleteById(id);
     }
 

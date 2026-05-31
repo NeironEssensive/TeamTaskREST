@@ -6,12 +6,14 @@ import java.util.Date;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 
 
 @Service
@@ -19,9 +21,10 @@ public class JwtService {
     private final SecretKey key;
     private final long expirationTime;
 
-    public JwtService() {
-        this.key = Jwts.SIG.HS256.key().build();
-        this.expirationTime = 3600000;
+    public JwtService(@Value("${jwt.secret}") String secret,
+                      @Value("${jwt.expiration-ms:3600000}") long expirationTime) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.expirationTime = expirationTime;
     }
 
     public String generateToken(String username, String role) {

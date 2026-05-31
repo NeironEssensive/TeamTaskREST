@@ -3,6 +3,10 @@ package com.example.team_task.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.hibernate.annotations.Cache;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -21,12 +25,14 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
+    @Cacheable(value = "users", key = "#root.methodName + ':' + @userService.getCurrentUsername()")
     public UserResponse getCurrentUser() {
         String username = getCurrentUsername();
         User user = userRepository.findByName(username).orElseThrow(() -> new UserNotFoundException(username));
         return mapToResponse(user);
     }
 
+    @Cacheable(value = "users", key = "'allUsers'")
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream().map(this::mapToResponse).toList();
     }
@@ -38,16 +44,20 @@ public class UserService {
 
         return authentication.getName();
     }
-
+    @Cacheable(value = "users", key = "'findByName:' + #name")
     public UserResponse findByName(String name) {
         User user = userRepository.findByName(name).orElseThrow(() -> new UserNotFoundException(name));
         return mapToResponse(user);
     }
-
+    @Cacheable(value = "users", key = "'findById:' + #id")
     public User findById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
-
+    @Caching(evict = {
+        @CacheEvict(value = "users", key = "'findById:' + #id"),
+        @CacheEvict(value = "users", key = "'findByName:' + #result.name", condition = "#result != null"),
+        @CacheEvict(value = "users", key = "'allUsers'")
+    })
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }

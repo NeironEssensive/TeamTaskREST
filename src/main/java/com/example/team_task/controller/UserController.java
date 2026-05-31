@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.team_task.dto.error.AccessDeniedException;
 import com.example.team_task.dto.error.ErrorResponse;
 import com.example.team_task.dto.user.UserResponse;
 import com.example.team_task.service.UserService;
@@ -99,7 +100,7 @@ public class UserController {
     public ResponseEntity<List<UserResponse>> allUsers() {
         UserResponse currentUser = userService.getCurrentUser();
         if (currentUser.getRole().equals("USER"))
-            throw new com.example.team_task.dto.error.AccessDeniedException("Access denied");
+            throw new AccessDeniedException("Access denied");
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
@@ -141,7 +142,7 @@ public class UserController {
             @PathVariable Long id) {
         UserResponse current = userService.getCurrentUser();
         if (!current.getRole().equals("ADMIN"))
-            throw new com.example.team_task.dto.error.AccessDeniedException();
+            throw new AccessDeniedException();
         userService.deleteUser(id);
     }
 }

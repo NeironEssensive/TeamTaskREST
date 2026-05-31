@@ -75,7 +75,8 @@ public class TaskController {
             @Parameter(
                 description = "Task data",
                 required = true,
-                examples = {
+                examples = 
+                {
                     @ExampleObject(
                         name = "Create task",
                         value = """
