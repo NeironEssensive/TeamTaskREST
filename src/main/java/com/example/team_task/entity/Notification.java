@@ -2,6 +2,8 @@ package com.example.team_task.entity;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -21,7 +23,7 @@ import lombok.Setter;
 @Table(name = "notifications")
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,6 +32,7 @@ public class Notification {
     private String notificationId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"tasks", "comments", "password"})
     private User user;
     @Column(nullable = false, length = 30)
     private String type;
@@ -39,6 +42,7 @@ public class Notification {
     private String message;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
+    @JsonIgnoreProperties({"user", "comments"})
     private Task task;
     @Column(name = "triggered_by")
     private Long triggeredBy;

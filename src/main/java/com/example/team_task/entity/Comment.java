@@ -3,6 +3,8 @@ package com.example.team_task.entity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -37,11 +39,13 @@ public class Comment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
+    @JsonIgnoreProperties({"user", "comments"})
     @Schema(description = "Task that this comment belongs to", required = true)
     private Task task;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"tasks", "comments", "password"})
     @Schema(description = "User who wrote this comment", required = true)
     private User user;
 

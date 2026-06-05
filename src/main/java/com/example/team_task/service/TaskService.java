@@ -11,7 +11,6 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.lang.NonNull;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,22 +21,29 @@ import com.example.team_task.dto.user.UserResponse;
 import com.example.team_task.entity.Task;
 import com.example.team_task.entity.Task.Priority;
 import com.example.team_task.entity.Task.Status;
+import com.example.team_task.entity.User;
 import com.example.team_task.repository.TaskRepository;
+import com.example.team_task.repository.UserRepository;
 
 @Service
 public class TaskService {
     private TaskRepository taskRepository;
     private UserService userService;
+    private EventPublisherService eventPublisherService;
 
-    public TaskService(TaskRepository taskRepository, UserService userService) {
+    public TaskService(TaskRepository taskRepository, UserService userService, EventPublisherService eventPublisherService) {
         this.taskRepository = taskRepository;
         this.userService = userService;
+        this.eventPublisherService = eventPublisherService;
     }
 
     @Transactional
     @CacheEvict(value = "tasks", allEntries = true)
     public TaskResponse saveTask(@NonNull Task task) {
-        return mapToResponse(taskRepository.save(task));
+        Task saved = taskRepository.save(task);
+        UserResponse currentUser = userService.getCurrentUser();
+        eventPublisherService.publishTaskCreated(saved, userService.findById(currentUser.getId()));
+        return mapToResponse(saved);
     }
 
     @Cacheable(value = "tasks", key = "'allTasks'")
@@ -70,11 +76,19 @@ public class TaskService {
             @CachePut(value = "task", key = "#id") 
     })
     public TaskResponse updateTask(Long id, Map<String, Object> taskData) {
-        Task task = entityFindTaskById(id);
-        updateFields(task, taskData);
-        TaskResponse updatedTask = saveTask(task);
-        updatedTask.setUpdatedAt(LocalDateTime.now());
-        return updatedTask;
+         Task task = entityFindTaskById(id);
+    
+    String oldTitle = task.getTitle();
+    String oldDescription = task.getDescription();
+    Status oldStatus = task.getStatus();
+    Priority oldPriority = task.getPriority();
+    updateFields(task, taskData);
+    Task saved = taskRepository.save(task);
+    UserResponse currentUser = userService.getCurrentUser();
+    eventPublisherService.publishTaskUpdated(task, saved, userService.findById(currentUser.getId()));
+    TaskResponse response = mapToResponse(saved);
+    response.setUpdatedAt(LocalDateTime.now());
+    return response;
     }
 
     @Transactional
@@ -83,7 +97,10 @@ public class TaskService {
             @CacheEvict(value = "tasks", allEntries = true)
     })
     public void deleteTask(Long id) {
+        Task task = entityFindTaskById(id);
+        UserResponse currentUser = userService.getCurrentUser();
         taskRepository.deleteById(id);
+        eventPublisherService.publishTaskDeleted(task, userService.findById(currentUser.getId()));
     }
 
     private void updateFields(Task task, Map<String, Object> taskData) {
@@ -130,5 +147,4 @@ public class TaskService {
                 .updatedAt(task.getUpdatedAt())
                 .build();
     }
-
 }

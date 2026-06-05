@@ -82,6 +82,11 @@ public class GlobalExceptionHandling {
         return buildResponse(HttpStatus.TOO_MANY_REQUESTS, "too many requests", ex.getMessage(), request);
     }
 
+    @ExceptionHandler(NotificationNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotificationNotFoundException(NotificationNotFoundException ex, HttpServletRequest request){
+        return buildResponse(HttpStatus.NOT_FOUND, "notification not found", ex.getMessage(), request);
+    }
+
     private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String error, String message, HttpServletRequest request) {
         ErrorResponse response = ErrorResponse
          .builder()

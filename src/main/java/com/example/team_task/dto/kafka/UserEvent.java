@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class UserEvent {
     private String eventId;
     private String eventType;
-    private Long userid;
+    private Long userId;
     private String username;
     private String email;
     private String role;

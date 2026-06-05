@@ -2,7 +2,7 @@ package com.example.team_task.dto.kafka;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-
+import com.example.team_task.dto.kafka.FieldChange;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,10 +27,4 @@ public class TaskEvent {
     private String ipAddress;
 }
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-class FieldChange {
-    private String oldValue;
-    private String newValue;
-}
+

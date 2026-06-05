@@ -41,22 +41,30 @@ public class UserService {
 
         return authentication.getName();
     }
+
     @Cacheable(value = "users", key = "'findByName:' + #name")
     public UserResponse findByName(String name) {
         User user = userRepository.findByName(name).orElseThrow(() -> new UserNotFoundException(name));
         return mapToResponse(user);
     }
+
     @Cacheable(value = "users", key = "'findById:' + #id")
     public User findById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
+
     @Caching(evict = {
-        @CacheEvict(value = "users", key = "'findById:' + #id"),
-        @CacheEvict(value = "users", key = "'findByName:' + #result.name", condition = "#result != null"),
-        @CacheEvict(value = "users", key = "'allUsers'")
+            @CacheEvict(value = "users", key = "'findById:' + #id"),
+            @CacheEvict(value = "users", key = "'findByName:' + #result.name", condition = "#result != null"),
+            @CacheEvict(value = "users", key = "'allUsers'")
     })
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    public User getCurrentUserEntity() {
+        UserResponse current = getCurrentUser();
+        return findById(current.getId());
     }
 
     public UserResponse mapToResponse(User user) {
