@@ -1,6 +1,6 @@
 # 🚀 Team Task Management API
 
-RESTful API for managing team tasks, users, and comments with JWT authentication, refresh tokens, Redis caching, and rate limiting.
+RESTful API for managing team tasks, users, and comments with JWT authentication, refresh tokens, Redis caching, rate limiting, and Apache Kafka event streaming.
 
 ![Java](https://img.shields.io/badge/Java-17%2B-blue?logo=java)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-6DB33F?logo=springboot)
@@ -9,6 +9,7 @@ RESTful API for managing team tasks, users, and comments with JWT authentication
 ![Database](https://img.shields.io/badge/Database-MySQL%208.0-blue?logo=mysql)
 ![Redis](https://img.shields.io/badge/Cache-Redis-DC382D?logo=redis)
 ![JWT](https://img.shields.io/badge/Security-JWT%20%2B%20Refresh-black?logo=jsonwebtokens)
+![Kafka](https://img.shields.io/badge/Streaming-Apache%20Kafka-231F20?logo=apachekafka)
 
 ---
 
@@ -25,15 +26,15 @@ RESTful API for managing team tasks, users, and comments with JWT authentication
     - [2. Users (`/users`)](#2-users-users)
     - [3. Tasks (`/tasks`)](#3-tasks-tasks)
     - [4. Comments (`/comments`)](#4-comments-comments)
+  - [📨 Apache Kafka Event Streaming](#-apache-kafka-event-streaming)
   - [🧠 Caching Strategy (Redis)](#-caching-strategy-redis)
   - [🛡 Rate Limiting](#-rate-limiting)
-
 
 ---
 
 ## 📖 About the Project
 
-**Team Task Management API** is a production-ready backend application for team task tracking. It provides secure JWT-based authentication with access/refresh tokens, role-based access control (USER/ADMIN), task and comment management, Redis caching for high performance, and rate limiting to protect public endpoints.
+**Team Task Management API** is a production-ready backend application for team task tracking. It provides secure JWT-based authentication with access/refresh tokens, role-based access control (USER/ADMIN), task and comment management, Redis caching for high performance, rate limiting to protect public endpoints, and **Apache Kafka** integration for event-driven notifications and audit logging.
 
 ---
 
@@ -45,6 +46,8 @@ RESTful API for managing team tasks, users, and comments with JWT authentication
 - **📋 Task Lifecycle:** CRUD operations with priority (`LOW`, `MEDIUM`, `HIGH`) and status (`PENDING`, `IN_PROGRESS`, `DONE`).
 - **💬 Comments:** Add comments to tasks; users delete their own, admins delete any.
 - **⚡ Redis Caching:** Frequently accessed data (tasks, users) cached with automatic eviction on updates/deletes.
+- **📨 Kafka Event Streaming:** Asynchronous event publishing on task/user/comment changes. Automatic notifications on status and priority transitions. Dedicated audit log topic for change tracking.
+- **🖥 Kafka UI:** Built-in web interface at `localhost:8085` for real-time message browsing across all topics.
 - **📚 Swagger UI:** Interactive API documentation with full request/response examples.
 - **🧩 Layered Architecture:** Clean separation between controllers, services, repositories, and security.
 
@@ -61,6 +64,9 @@ RESTful API for managing team tasks, users, and comments with JWT authentication
 | **MySQL 8.0** | Primary relational database. |
 | **Redis** | Caching, refresh token storage, and rate limiting counters. |
 | **Spring Cache** | Declarative caching abstraction (`@Cacheable`, `@CacheEvict`, `@CachePut`). |
+| **Apache Kafka** | Distributed event streaming platform for async messaging. |
+| **Spring Kafka** | Spring integration for Kafka producers/consumers. |
+| **Docker Compose** | Container orchestration for Kafka + Zookeeper + Kafka UI. |
 | **JWT (io.jsonwebtoken)** | Token generation, parsing, and validation. |
 | **SpringDoc OpenAPI** | Swagger UI generation from annotations. |
 | **BCrypt** | Password hashing. |
@@ -70,16 +76,36 @@ RESTful API for managing team tasks, users, and comments with JWT authentication
 
 ---
 
+## ⚙️ Configuration
+
+### Prerequisites
+
+- **Java 17+**
+- **Maven 3.8+**
+- **MySQL 8.0** running on `localhost:3306`
+- **Redis** running on `localhost:6379`
+- **Docker & Docker Compose** (for Kafka infrastructure)
+
+### Kafka Infrastructure Setup
+
+```bash
+# Start  Redis, Zookeeper, Kafka, and Kafka UI
+docker-compose up -d
+```
+
+This launches:
+
+Redis on localhost:6379
+
+Zookeeper on localhost:2181
+
+Kafka Broker on localhost:9092
+
+Kafka UI on http://localhost:8085
 
 
-text
-
----
-
-
-## 🌐 API Endpoints
-
-Full interactive docs available at `http://localhost:8080/swagger-ui.html` after startup.
+🌐 API Endpoints
+Full interactive docs available at http://localhost:8080/swagger-ui.html after startup.
 
 ### 1. Authentication (`/auth`)
 
@@ -122,36 +148,63 @@ Full interactive docs available at `http://localhost:8080/swagger-ui.html` after
 
 ---
 
-## 🧠 Caching Strategy (Redis)
+## 📨 Apache Kafka Event Streaming
 
-The application uses **Redis** via Spring Cache abstraction to reduce database load.
+The application publishes events asynchronously to Apache Kafka whenever critical domain changes occur. This enables loose coupling, real-time notifications, and comprehensive audit trails without blocking the main request-response cycle.
 
-### Cached Data
+### Architecture Overview
 
-| Cache Name | Cached Method(s) | Eviction Trigger |
-|:---|:---|:---|
-| `tasks` | `allTasks()`, `myTasks()` | `saveTask()`, `updateTask()`, `deleteTask()` |
-| `task` | `findTaskById(id)` | `updateTask(id)`, `deleteTask(id)` |
-| `users` | `getCurrentUser()`, `getAllUsers()`, `findByName()`, `findById()` | `deleteUser(id)` |
+```text
+[Service Layer] → EventPublisherService → KafkaProducerService → Apache Kafka Topics
+                                                                       ↓
+                                                              [Future Consumers]
+                                                         (Notifications, Analytics, Audit)
+```
+```json
+{
+  "taskId": 42,
+  "taskTitle": "Implement login page",
+  "oldValue": "PENDING",
+  "newValue": "IN_PROGRESS",
+  "changedField": "status",
+  "message": "Task 'Implement login page' status changed from PENDING to IN_PROGRESS",
+  "timestamp": "2026-06-05T14:30:00"
+}
+```
+Kafka UI
+Monitor all topics and messages in real-time at:
 
-### Cache Annotations Used
+🔗 http://localhost:8085
 
-- `@Cacheable` — stores method result in Redis.
-- `@CachePut` — updates cache entry after method execution.
-- `@CacheEvict` — removes entries on data changes.
-- `@Caching` — combines multiple cache operations.
+The UI provides:
 
----
+Topic list with message counts
 
-## 🛡 Rate Limiting
+Message browsing with key/value/header inspection
 
-Rate limiting is implemented using **Redis** counters with IP-based keys.
+Live tail mode for real-time monitoring
 
-### Protected Endpoints
+🧠 Caching Strategy (Redis)
+The application uses Redis via Spring Cache abstraction to reduce database load.
 
-| Endpoint | Limit | Window |
-|:---|:---|:---|
-| `POST /auth/login` | 3 attempts | 60 seconds |
-| `POST /auth/register` | 3 attempts | 60 seconds |
+Cached Data
+Cache Name	Cached Method(s)	Eviction Trigger
+tasks	allTasks(), myTasks()	saveTask(), updateTask(), deleteTask()
+task	findTaskById(id)	updateTask(id), deleteTask(id)
+users	getCurrentUser(), getAllUsers(), findByName(), findById()	deleteUser(id)
+Cache Annotations Used
+@Cacheable — stores method result in Redis.
 
-On exceeding the limit, the API returns HTTP `429 Too Many Requests`.
+@CachePut — updates cache entry after method execution.
+
+@CacheEvict — removes entries on data changes.
+
+@Caching — combines multiple cache operations.
+
+🛡 Rate Limiting
+Rate limiting is implemented using Redis counters with IP-based keys.
+
+Protected Endpoints
+Endpoint	Limit	Window
+POST /auth/login	3 attempts	60 seconds
+POST /auth/register	3 attempts	60 seconds
