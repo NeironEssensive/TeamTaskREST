@@ -81,7 +81,7 @@ public class TaskService {
     String oldTitle = task.getTitle();
     String oldDescription = task.getDescription();
     Status oldStatus = task.getStatus();
-    Priority oldPriority = task.getPriority();
+    Priority oldPriority = task.getPriority();  
     updateFields(task, taskData);
     Task saved = taskRepository.save(task);
     UserResponse currentUser = userService.getCurrentUser();
