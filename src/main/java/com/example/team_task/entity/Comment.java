@@ -22,7 +22,7 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "comments")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @Getter
 @Setter
 @Schema(description = "Comment entity representing a comment on a task")
