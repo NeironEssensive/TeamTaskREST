@@ -147,7 +147,7 @@ Architecture Overview
                                                                        ↓
                                                               [Future Consumers]
                                                          (Notifications, Analytics, Audit)
-json
+```json
 {
   "taskId": 42,
   "taskTitle": "Implement login page",
