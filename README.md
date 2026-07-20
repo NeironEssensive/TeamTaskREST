@@ -98,6 +98,7 @@ RESTful API for managing team tasks, users, and comments with JWT authentication
 ```bash
 # Start  Redis, Zookeeper, Kafka, and Kafka UI
 docker-compose up -d
+```
 This launches:
 
 Redis on localhost:6379
@@ -147,6 +148,7 @@ Architecture Overview
                                                                        ↓
                                                               [Future Consumers]
                                                          (Notifications, Analytics, Audit)
+```
 ```json
 {
   "taskId": 42,
@@ -157,6 +159,7 @@ Architecture Overview
   "message": "Task 'Implement login page' status changed from PENDING to IN_PROGRESS",
   "timestamp": "2026-06-05T14:30:00"
 }
+```
 Kafka UI
 Monitor all topics and messages in real-time at:
 
@@ -254,7 +257,7 @@ Kafka	Unit + Integration	3 classes	Producers, consumers, embedded broker
 Integration	E2E	3 classes	Redis, DB, Kafka end-to-end
 Total		27 test classes	Full coverage
 Running Tests
-bash
+```bash
 # All tests
 mvn clean test
 
@@ -282,3 +285,4 @@ mvn test -T 4
 # Generate test reports
 mvn clean test
 open target/surefire-reports/index.html
+```
