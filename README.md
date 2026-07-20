@@ -142,7 +142,7 @@ DELETE	/comments/admin/delete/{id}	ADMIN
 The application publishes events asynchronously to Apache Kafka whenever critical domain changes occur. This enables loose coupling, real-time notifications, and comprehensive audit trails without blocking the main request-response cycle.
 
 Architecture Overview
-text
+```text
 [Service Layer] → EventPublisherService → KafkaProducerService → Apache Kafka Topics
                                                                        ↓
                                                               [Future Consumers]
