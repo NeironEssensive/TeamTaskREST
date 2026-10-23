@@ -143,10 +143,11 @@ class RedisIntegrationTest {
         rateLimitService.isLoginRateLimited();
 
         String key = "rate_limit:login:127.0.0.1";
-        Long attempts = (Long) redisTemplate.opsForValue().get(key);
+        // the JSON serializer reads small numbers back as Integer
+        Number attempts = (Number) redisTemplate.opsForValue().get(key);
 
         assertThat(attempts).isNotNull();
-        assertThat(attempts).isEqualTo(2L);
+        assertThat(attempts.longValue()).isEqualTo(2L);
     }
 
     @Test

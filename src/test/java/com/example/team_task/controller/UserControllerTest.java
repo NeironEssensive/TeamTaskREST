@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -138,7 +139,7 @@ class UserControllerTest {
     void deleteUser_UserNotFound_ReturnsNotFound() throws Exception {
         when(userService.getCurrentUser()).thenReturn(adminResponse);
         when(userService.findByName("admin")).thenReturn(adminResponse);
-        when(userService.findById(2L)).thenThrow(new UserNotFoundException(2L));
+        doThrow(new UserNotFoundException(2L)).when(userService).deleteUser(2L);
 
         mockMvc.perform(delete("/users/admin/2"))
                 .andExpect(status().isNotFound())

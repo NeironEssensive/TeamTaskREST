@@ -14,6 +14,8 @@ import com.example.team_task.repository.TaskRepository;
 import com.example.team_task.repository.UserRepository;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +27,6 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -47,7 +48,7 @@ import static org.awaitility.Awaitility.await;
                 "port=9092"
         }
 )
-@Transactional
+// no @Transactional: the listener threads must see committed test data, so tearDown() cleans up instead
 class KafkaIntegrationTest {
 
     @Autowired
@@ -90,6 +91,14 @@ class KafkaIntegrationTest {
         testTask = taskRepository.save(testTask);
     }
 
+    @AfterEach
+    void tearDown() {
+        notificationRepository.deleteAll();
+        auditLogRepository.deleteAll();
+        taskRepository.deleteAll();
+        userRepository.deleteAll();
+    }
+
     @Test
     void sendTaskEvent_ValidEvent_CanBeConsumed() {
         TaskEvent event = TaskEvent.builder()
@@ -110,10 +119,14 @@ class KafkaIntegrationTest {
         kafkaTemplate.flush();
 
         Consumer<String, Object> consumer = createConsumer("task-events");
-        ConsumerRecord<String, Object> record = KafkaTestUtils.getSingleRecord(consumer, "task-events", Duration.ofSeconds(10));
+        // the topic also holds events from other tests, so look for this one by its id
+        ConsumerRecords<String, Object> records = KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(10));
 
-        assertThat(record).isNotNull();
-        assertThat(record.key()).isEqualTo(testTask.getId().toString());
+        assertThat(records.records("task-events"))
+                .filteredOn(record -> record.value() instanceof TaskEvent taskEvent
+                        && event.getEventId().equals(taskEvent.getEventId()))
+                .singleElement()
+                .satisfies(record -> assertThat(record.key()).isEqualTo(testTask.getId().toString()));
     }
 
     @Test

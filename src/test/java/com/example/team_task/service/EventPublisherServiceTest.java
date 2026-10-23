@@ -45,6 +45,7 @@ class EventPublisherServiceTest {
         taskOwner = new User();
         taskOwner.setId(1L);
         taskOwner.setName("taskowner");
+        taskOwner.setEmail("taskowner@example.com");
 
         performedBy = new User();
         performedBy.setId(2L);

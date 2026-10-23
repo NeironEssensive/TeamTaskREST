@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,9 +43,10 @@ class RateLimitServiceTest {
         ReflectionTestUtils.setField(rateLimitService, "registerMaxAttempts", 3);
         ReflectionTestUtils.setField(rateLimitService, "windowSeconds", 60);
 
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(request.getHeader("X-Forwarded-For")).thenReturn(null);
-        when(request.getRemoteAddr()).thenReturn("192.168.1.1");
+        // not every test reaches Redis or reads the request, so these defaults are lenient
+        lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        lenient().when(request.getHeader("X-Forwarded-For")).thenReturn(null);
+        lenient().when(request.getRemoteAddr()).thenReturn("192.168.1.1");
     }
 
     @Test

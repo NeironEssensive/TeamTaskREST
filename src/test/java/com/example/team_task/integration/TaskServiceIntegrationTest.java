@@ -5,11 +5,14 @@ import com.example.team_task.entity.Task;
 import com.example.team_task.entity.User;
 import com.example.team_task.repository.TaskRepository;
 import com.example.team_task.repository.UserRepository;
+import com.example.team_task.service.EventPublisherService;
 import com.example.team_task.service.TaskService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,10 +38,20 @@ class TaskServiceIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private CacheManager cacheManager;
+
+    // Kafka is covered by KafkaIntegrationTest; here only the database matters
+    @MockBean
+    private EventPublisherService eventPublisherService;
+
     private User testUser;
 
     @BeforeEach
     void setUp() {
+        // Redis caches outlive the rolled-back transactions of earlier tests
+        cacheManager.getCacheNames().forEach(name -> cacheManager.getCache(name).clear());
+
         testUser = new User();
         testUser.setName("integrationuser");
         testUser.setEmail("integration@example.com");

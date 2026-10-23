@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -72,7 +73,7 @@ class AdminAuditControllerTest {
         Page<AuditLogResponse> auditPage = new PageImpl<>(
                 List.of(auditLogResponse), PageRequest.of(0, 20), 1);
 
-        when(auditLogService.getAuditLog(isNull(), isNull(), isNull(), isNull(), isNull(), 0, 20))
+        when(auditLogService.getAuditLog(isNull(), isNull(), isNull(), isNull(), isNull(), eq(0), eq(20)))
                 .thenReturn(auditPage);
 
         mockMvc.perform(get("/admin/audit"))
@@ -149,8 +150,9 @@ class AdminAuditControllerTest {
 
     @Test
     void getAuditLog_WithCustomPageAndSize_ReturnsCorrectPage() throws Exception {
+        // page 2 of 25 items with size 10 holds the last 5; otherwise PageImpl recalculates the total
         Page<AuditLogResponse> auditPage = new PageImpl<>(
-                List.of(auditLogResponse), PageRequest.of(2, 10), 25);
+                Collections.nCopies(5, auditLogResponse), PageRequest.of(2, 10), 25);
 
         when(auditLogService.getAuditLog(
                 isNull(), isNull(), isNull(), isNull(), isNull(), eq(2), eq(10)))
