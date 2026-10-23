@@ -2,6 +2,8 @@ package com.example.team_task.controller;
 
 import com.example.team_task.dto.kafka.AuditLogResponse;
 import com.example.team_task.service.AuditLogService;
+import com.example.team_task.service.JwtService;
+import com.example.team_task.service.CustomUserDetailService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +43,12 @@ class AdminAuditControllerTest {
 
     @MockBean
     private AuditLogService auditLogService;
+
+    @MockBean
+    private JwtService jwtService;
+
+    @MockBean
+    private CustomUserDetailService customUserDetailService;
 
     private AuditLogResponse auditLogResponse;
 

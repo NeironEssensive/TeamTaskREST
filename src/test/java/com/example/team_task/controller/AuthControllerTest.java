@@ -15,6 +15,7 @@ import com.example.team_task.service.AuthService;
 import com.example.team_task.service.JwtService;
 import com.example.team_task.service.RateLimitService;
 import com.example.team_task.service.UserService;
+import com.example.team_task.service.CustomUserDetailService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,6 +59,9 @@ class AuthControllerTest {
 
     @MockBean
     private RateLimitService rateLimitService;
+
+    @MockBean
+    private CustomUserDetailService customUserDetailService;
 
     private RegisterRequest registerRequest;
     private LoginRequest loginRequest;

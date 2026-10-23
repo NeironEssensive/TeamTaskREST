@@ -3,6 +3,8 @@ package com.example.team_task.controller;
 import com.example.team_task.dto.error.UserNotFoundException;
 import com.example.team_task.dto.user.UserResponse;
 import com.example.team_task.service.UserService;
+import com.example.team_task.service.JwtService;
+import com.example.team_task.service.CustomUserDetailService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +35,12 @@ class UserControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private JwtService jwtService;
+
+    @MockBean
+    private CustomUserDetailService customUserDetailService;
 
     private UserResponse userResponse;
     private UserResponse adminResponse;
