@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    # Redis for the integration tests. MySQL is started by Testcontainers
+    # (jdbc:tc: URL in ci/application-ci.yml), Kafka tests use the embedded broker.
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # JDK 21: the surefire argLine uses -XX:+EnableDynamicAgentLoading,
+      # which JDK 17 does not recognise. The code is still compiled for Java 17.
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Build and run tests
+        env:
+          SPRING_CONFIG_ADDITIONALLOCATION: file:./ci/application-ci.yml
+        run: ./mvnw -B -ntp verify
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
+          if-no-files-found: ignore

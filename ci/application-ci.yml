@@ -1,0 +1,32 @@
+# Test settings for CI. The GitHub Actions workflow passes this file to Spring Boot
+# via SPRING_CONFIG_ADDITIONALLOCATION; local runs keep using your own
+# (gitignored) application*.properties.
+
+jwt:
+  secret: ci-only-test-secret-not-a-real-key-0123456789
+  refresh-token-ttl: 604800000
+
+spring:
+  datasource:
+    # Testcontainers starts a throwaway MySQL 8 in Docker for the test run
+    url: jdbc:tc:mysql:8.0:///team_task
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  data:
+    redis:
+      # Redis comes from the "services" section of the workflow
+      host: localhost
+      port: 6379
+      password: ""
+  kafka:
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        # without a broker, a send fails fast instead of blocking for 60 s
+        "[max.block.ms]": 3000
+    consumer:
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      properties:
+        "[spring.json.trusted.packages]": "*"

@@ -52,7 +52,7 @@ public class JwtService {
             return true;
         } catch (ExpiredJwtException e) {
             return false;
-        } catch (JwtException e) {
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }

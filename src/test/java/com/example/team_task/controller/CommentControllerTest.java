@@ -10,6 +10,8 @@ import com.example.team_task.entity.User;
 import com.example.team_task.service.CommentService;
 import com.example.team_task.service.TaskService;
 import com.example.team_task.service.UserService;
+import com.example.team_task.service.JwtService;
+import com.example.team_task.service.CustomUserDetailService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +52,12 @@ class CommentControllerTest {
 
     @MockBean
     private TaskService taskService;
+
+    @MockBean
+    private JwtService jwtService;
+
+    @MockBean
+    private CustomUserDetailService customUserDetailService;
 
     private UserResponse userResponse;
     private UserResponse adminResponse;

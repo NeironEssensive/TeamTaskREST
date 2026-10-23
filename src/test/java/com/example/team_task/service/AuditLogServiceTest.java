@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -134,7 +135,8 @@ class AuditLogServiceTest {
     @Test
     void getAuditLog_DifferentPageSize_UsesProvidedPagination() {
         PageRequest pageRequest = PageRequest.of(1, 10);
-        Page<AuditLog> auditPage = new PageImpl<>(List.of(testAuditLog), pageRequest, 15);
+        // page 1 of 15 items with size 10 holds the last 5; otherwise PageImpl recalculates the total
+        Page<AuditLog> auditPage = new PageImpl<>(Collections.nCopies(5, testAuditLog), pageRequest, 15);
 
         when(auditLogRepository.findAllByOrderByCreatedAtDesc(pageRequest)).thenReturn(auditPage);
 
@@ -165,10 +167,6 @@ class AuditLogServiceTest {
 
     @Test
     void mapToResponse_ValidAuditLog_ReturnsCorrectResponse() {
-        AuditLogResponse response = auditLogService.getAuditLog(
-                from, to, null, 2L, null, 0, 20)
-                .getContent().isEmpty() ? null : null;
-
         PageRequest pageRequest = PageRequest.of(0, 20);
         Page<AuditLog> auditPage = new PageImpl<>(List.of(testAuditLog), pageRequest, 1);
         when(auditLogRepository.findByPerformedByAndCreatedAtBetween(2L, from, to, pageRequest))

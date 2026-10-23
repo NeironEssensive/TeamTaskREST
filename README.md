@@ -2,8 +2,9 @@
 
 RESTful API for managing team tasks, users, and comments with JWT authentication, refresh tokens, Redis caching, rate limiting, and Apache Kafka event streaming.
 
+[![CI](https://github.com/NeironEssensive/TeamTaskREST/actions/workflows/ci.yml/badge.svg)](https://github.com/NeironEssensive/TeamTaskREST/actions/workflows/ci.yml)
 ![Java](https://img.shields.io/badge/Java-17%2B-blue?logo=java)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-6DB33F?logo=springboot)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1-6DB33F?logo=springboot)
 ![License](https://img.shields.io/badge/License-Apache%202.0-green)
 ![Build](https://img.shields.io/badge/Build-Maven%20Ready-orange?logo=apachemaven)
 ![Database](https://img.shields.io/badge/Database-MySQL%208.0-blue?logo=mysql)
@@ -65,7 +66,7 @@ RESTful API for managing team tasks, users, and comments with JWT authentication
 | Technology | Purpose |
 |:---|:---|
 | **Java 17** | Core programming language (LTS). |
-| **Spring Boot 3.2** | Application framework with auto-configuration. |
+| **Spring Boot 3.1** | Application framework with auto-configuration. |
 | **Spring Security** | Authentication and authorization with JWT filter chain. |
 | **Spring Data JPA** | ORM and repository abstraction over Hibernate. |
 | **MySQL 8.0** | Primary relational database. |
@@ -286,3 +287,5 @@ mvn test -T 4
 mvn clean test
 open target/surefire-reports/index.html
 ```
+
+CI (GitHub Actions) runs the full suite on every push and pull request to `master`. Test settings for CI (JWT secret, Testcontainers MySQL, Redis service, Kafka serializers) live in [`ci/application-ci.yml`](ci/application-ci.yml), so local `application*.properties` stay untouched.

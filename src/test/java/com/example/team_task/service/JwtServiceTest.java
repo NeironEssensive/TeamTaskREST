@@ -147,9 +147,10 @@ class JwtServiceTest {
     }
 
     @Test
-    void generateToken_SameInput_ProducesDifferentTokens() {
+    void generateToken_SameInput_ProducesDifferentTokens() throws Exception {
         String token1 = jwtService.generateToken("testuser", "USER");
-        Thread.sleep(1);
+        // iat has second precision: tokens differ only once a second has passed
+        Thread.sleep(1000);
         String token2 = jwtService.generateToken("testuser", "USER");
 
         assertThat(token1).isNotEqualTo(token2);

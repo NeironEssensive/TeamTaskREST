@@ -95,8 +95,7 @@ public class CommentController {
         User trueUser = userService.findById(user.getId());
         Task task = taskService.entityFindTaskById(id);
         Comment comment = new Comment(text, task, trueUser);
-        commentService.saveComment(comment);
-        return ResponseEntity.ok(commentService.mapToResponse(comment));
+        return ResponseEntity.ok(commentService.saveComment(comment));
     }
 
     @DeleteMapping("/delete/{id}")

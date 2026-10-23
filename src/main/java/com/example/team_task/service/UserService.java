@@ -59,6 +59,8 @@ public class UserService {
             @CacheEvict(value = "users", key = "'allUsers'")
     })
     public void deleteUser(Long id) {
+        // throws UserNotFoundException, so a missing user gives 404 instead of 204
+        findById(id);
         userRepository.deleteById(id);
     }
 

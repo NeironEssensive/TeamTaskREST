@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,7 +40,8 @@ class RefreshTokenServiceTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(refreshTokenService, "refreshTokenTtl", 604800000L);
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        // delete operations don't go through opsForValue(), so this default is lenient
+        lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     }
 
     @Test
