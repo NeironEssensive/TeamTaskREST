@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -270,8 +271,15 @@ class KafkaIntegrationTest {
     private Consumer<String, Object> createConsumer(String topic) {
         Map<String, Object> consumerProps = KafkaTestUtils.consumerProps(
                 "test-group-" + UUID.randomUUID(), "true", embeddedKafkaBroker);
+        // keep the factory's String/JSON deserializers instead of the Integer/String test defaults
+        Properties overrides = new Properties();
+        consumerProps.forEach((key, value) -> {
+            if (!key.endsWith(".deserializer")) {
+                overrides.put(key, value);
+            }
+        });
         Consumer<String, Object> consumer = consumerFactory.createConsumer(
-                "test-consumer-" + UUID.randomUUID(), null, null, consumerProps);
+                "test-consumer-" + UUID.randomUUID(), null, null, overrides);
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer, topic);
         return consumer;
     }
